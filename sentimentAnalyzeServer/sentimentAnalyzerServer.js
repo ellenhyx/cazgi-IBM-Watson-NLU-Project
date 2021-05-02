@@ -29,21 +29,89 @@ app.get("/", (req, res) => {
 });
 
 app.get("/url/emotion", (req, res) => {
-
-    return res.send({ "happy": "90", "sad": "10" });
+    const params = {
+        'url': req.query.url,
+        'features': {
+            'keywords': {
+                'emotion': true,
+                'limit': 1
+            }
+        }
+    };
+    return handleEmotionRequest(params, res)
 });
 
 app.get("/url/sentiment", (req, res) => {
-    return res.send("url sentiment for " + req.query.url);
+    const params = {
+        'url': req.query.url,
+        'features': {
+            'keywords': {
+                'sentiment': true,
+                'limit': 1
+            }
+        }
+    };
+    return handleSentimentRequest(params, res)
 });
 
 app.get("/text/emotion", (req, res) => {
-    return res.send({ "happy": "10", "sad": "90" });
+    const params = {
+        'text': req.query.text,
+        'features': {
+            'keywords': {
+                'emotion': true,
+                'limit': 1
+            }
+        }
+    };
+    handleEmotionRequest(params, res)
 });
 
 app.get("/text/sentiment", (req, res) => {
-    return res.send("text sentiment for " + req.query.text);
+    const params = {
+        'text': req.query.text,
+        'features': {
+            'keywords': {
+                'sentiment': true,
+                'limit': 1
+            }
+        }
+    };
+    return handleSentimentRequest(params,res)
 });
+
+function handleSentimentRequest(params, res){
+    getNLUInstance().analyze(params)
+    .then(analysisResults => {
+        if (analysisResults && analysisResults.result && analysisResults.result.keywords
+            && analysisResults.result.keywords.length > 0
+            && analysisResults.result.keywords[0].sentiment
+            && analysisResults.result.keywords[0].sentiment.label)
+            return res.send(JSON.stringify(analysisResults.result.keywords[0].sentiment.label, null, 2))
+        else
+            return res.status(500).send("Bad return message");
+    })
+    .catch(err => {
+        console.log('error:', err);
+        return res.status(500).send(err.toString());
+    });
+}
+
+function handleEmotionRequest(params, res){
+    getNLUInstance().analyze(params)
+    .then(analysisResults => {
+        if (analysisResults && analysisResults.result && analysisResults.result.keywords
+            && analysisResults.result.keywords.length > 0
+            && analysisResults.result.keywords[0].emotion)
+            return res.send(JSON.stringify(analysisResults.result.keywords[0].emotion, null, 2))
+        else
+            return res.status(500).send("Bad return message");
+    })
+    .catch(err => {
+        console.log('error:', err);
+        return res.status(500).send(err.toString());
+    });
+}
 
 let server = app.listen(8080, () => {
     console.log('Listening', server.address().port)
