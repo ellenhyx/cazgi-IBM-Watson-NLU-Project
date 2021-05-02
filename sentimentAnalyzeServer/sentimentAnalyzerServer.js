@@ -32,9 +32,7 @@ app.get("/url/emotion", (req, res) => {
     const params = {
         'url': req.query.url,
         'features': {
-            'keywords': {
-                'emotion': true,
-                'limit': 1
+            'emotion': {
             }
         }
     };
@@ -45,9 +43,7 @@ app.get("/url/sentiment", (req, res) => {
     const params = {
         'url': req.query.url,
         'features': {
-            'keywords': {
-                'sentiment': true,
-                'limit': 1
+            'sentiment': {
             }
         }
     };
@@ -58,9 +54,7 @@ app.get("/text/emotion", (req, res) => {
     const params = {
         'text': req.query.text,
         'features': {
-            'keywords': {
-                'emotion': true,
-                'limit': 1
+            'emotion': {
             }
         }
     };
@@ -71,9 +65,7 @@ app.get("/text/sentiment", (req, res) => {
     const params = {
         'text': req.query.text,
         'features': {
-            'keywords': {
-                'sentiment': true,
-                'limit': 1
+            'sentiment': {
             }
         }
     };
@@ -83,11 +75,13 @@ app.get("/text/sentiment", (req, res) => {
 function handleSentimentRequest(params, res){
     getNLUInstance().analyze(params)
     .then(analysisResults => {
-        if (analysisResults && analysisResults.result && analysisResults.result.keywords
-            && analysisResults.result.keywords.length > 0
-            && analysisResults.result.keywords[0].sentiment
-            && analysisResults.result.keywords[0].sentiment.label)
-            return res.send(JSON.stringify(analysisResults.result.keywords[0].sentiment.label, null, 2))
+        if (analysisResults && analysisResults.result 
+            && analysisResults.result.sentiment 
+            && analysisResults.result.sentiment.document
+            && analysisResults.result.sentiment.document.label){
+            console.log(JSON.stringify(analysisResults.result))
+            return res.send(JSON.stringify(analysisResults.result.sentiment.document.label, null, 2))
+        }
         else
             return res.status(500).send("Bad return message");
     })
@@ -100,10 +94,13 @@ function handleSentimentRequest(params, res){
 function handleEmotionRequest(params, res){
     getNLUInstance().analyze(params)
     .then(analysisResults => {
-        if (analysisResults && analysisResults.result && analysisResults.result.keywords
-            && analysisResults.result.keywords.length > 0
-            && analysisResults.result.keywords[0].emotion)
-            return res.send(JSON.stringify(analysisResults.result.keywords[0].emotion, null, 2))
+        if (analysisResults && analysisResults.result 
+            && analysisResults.result.emotion
+            && analysisResults.result.emotion.document
+            && analysisResults.result.emotion.document.emotion){
+            console.log(JSON.stringify(analysisResults.result))
+            return res.send(JSON.stringify(analysisResults.result.emotion.document.emotion, null, 2))
+        }
         else
             return res.status(500).send("Bad return message");
     })
